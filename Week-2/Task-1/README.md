@@ -27,7 +27,7 @@
 🌐 Gradio Web Interface
 
 <p align="center">
-  <img src="screenshots/web-ui.png" alt="Neurofive AI Support Web UI" width="90%">
+  <img src="Screenshots/web-ui.png" alt="Neurofive AI Support Web UI" width="90%">
 </p>
 
 <p align="center">
