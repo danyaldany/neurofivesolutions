@@ -1,5 +1,3 @@
-
-```markdown
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/Gradio-6.0-FF6B6B?style=for-the-badge&logo=gradio&logoColor=white" alt="Gradio">
@@ -18,7 +16,7 @@
 <p align="center">
   <a href="#-what-is-rag">What is RAG</a> •
   <a href="#-features">Features</a> •
-  <a href="#-demo-screenshots">Screenshots</a> •
+  <a href="#-demo-screenshot">Screenshot</a> •
   <a href="#-tech-stack">Tech Stack</a> •
   <a href="#-installation">Installation</a> •
   <a href="#-usage">Usage</a> •
@@ -42,17 +40,15 @@
 
 ---
 
-## 📸 Demo Screenshots
+## 📸 Demo Screenshot
 
-### 🌐 Web Dashboard — Upload & Process Resume
 <p align="center">
-  <img src="Dashboard.png" alt="Upload Resume Dashboard" width="90%">
+  <img src="Dashboard.png" alt="Neurofive RAG Resume Chatbot Dashboard" width="95%">
 </p>
-<p align="center"><i>Upload your PDF resume and click "Process Resume" to build the vector index</i></p>
+<p align="center"><i>Professional Gradio web interface — upload your resume and chat with AI-grounded answers</i></p>
 
 ---
 
----
 ## ✨ Features
 
 | Feature | Description |
@@ -99,7 +95,7 @@ cd neurofive-rag-resume
 python -m venv venv
 
 # Windows
-venv\Scripts\activate
+venv\Scripts ctivate
 
 # macOS/Linux
 source venv/bin/activate
@@ -153,6 +149,19 @@ Upload your resume and try these questions:
 
 ---
 
+## 📁 Project Structure
+
+```
+week-3/
+├── Dashboard.png                    # 📸 Screenshot of the web UI
+├── rag_app.py                       # 🌐 Gradio Web Dashboard
+├── rag_chatbot.py                   # 💻 Command-Line Interface
+├── requirements.txt                 # Python dependencies
+├── .env.example                     # Environment template
+├── .gitignore                       # Git ignore rules
+└── README.md                        # This file
+```
+
 ---
 
 ## 🔒 Security
@@ -191,7 +200,3 @@ Built with ❤️ using Python, Gradio, FAISS & Google Gemini
 <p align="center">
   <sub>⭐ Star this repo if you found it helpful!</sub>
 </p>
-```
-
----
-
