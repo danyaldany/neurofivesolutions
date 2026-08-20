@@ -1,0 +1,47 @@
+[
+  {
+    "test": {
+      "id": 1,
+      "label": "Clean Complete Message",
+      "text": "Hi, my name is Sarah Johnson and my email is sarah.j@example.com. I can't log into my account since yesterday morning. I need this fixed ASAP as I'm missing important client calls."
+    },
+    "result": null,
+    "ok": false
+  },
+  {
+    "test": {
+      "id": 2,
+      "label": "Missing Email, Vague Issue",
+      "text": "Hey this is Mike. My app keeps crashing when I try to upload photos. It's really annoying and happens every time."
+    },
+    "result": null,
+    "ok": false
+  },
+  {
+    "test": {
+      "id": 3,
+      "label": "Billing Complaint \u2014 Angry",
+      "text": "I was charged TWICE for my subscription this month!!! This is unacceptable. My email is angry.customer@email.com and I want a refund immediately or I'm canceling everything."
+    },
+    "result": null,
+    "ok": false
+  },
+  {
+    "test": {
+      "id": 4,
+      "label": "Feature Request \u2014 Anonymous",
+      "text": "It would be great if you could add dark mode to the dashboard. Also, a mobile app would be nice. Not urgent but would improve user experience a lot."
+    },
+    "result": null,
+    "ok": false
+  },
+  {
+    "test": {
+      "id": 5,
+      "label": "Technical \u2014 Detailed",
+      "text": "Hello, I'm Dr. Emily Chen (emily.chen@hospital.org). The API integration with our patient records system stopped working after your last update on March 15th. We are getting 403 errors. This is critical as it affects our daily operations."
+    },
+    "result": null,
+    "ok": false
+  }
+]
