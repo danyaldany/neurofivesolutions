@@ -53,6 +53,11 @@ Students waste hours creating study schedules that don't account for their weak 
   <img src="dashboard.png" alt="Study Planner Dashboard" width="90%">
 </p>
 
+
+<p align="center">
+  <img src="plain.png" alt="Study Planner Dashboard" width="90%">
+</p>
+
 ---
 
 ## ✨ Features
