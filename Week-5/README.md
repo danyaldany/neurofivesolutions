@@ -1,175 +1,572 @@
-# 🤖 N8N RAG Agent — AI-Powered Workflow Automation
----
-This project contains an advanced **Retrieval-Augmented Generation (RAG)** agent built with **n8n**, **LangChain**, and **OpenAI GPT models**.  
-It’s designed for real-world AI automation use cases such as **customer support**, **lead capture**, and **knowledge-based responses** with integrated tools like Google Sheets and Gmail.
-![Image](./image.png)
----
 
-## 🧩 Features
+# 🤖 N8N RAG Agent — AI-Powered Knowledge & Lead Automation
 
-- **End-to-End Conversational AI Workflow**
-  - Integrates with `OpenAI GPT-4 / GPT-4o` via LangChain nodes
-  - Context-aware memory (buffer window)
-  - Structured AI prompt for consistent persona and logic
-- **RAG (Retrieval-Augmented Generation)**
-  - Connects to a Supabase Vector Store for document-based knowledge retrieval
-  - Queries stored data before responding to user questions
-- **Automated Lead Capture**
-  - Collects Name + Email during the chat
-  - Saves leads directly to Google Sheets
-  - Sends notification emails using Gmail API
-- **Clean JSON API Integration**
-  - Communicates via Webhook endpoints for front-end chat integrations
-- **Friendly, Controlled Chat Flow**
-  - Lead-first approach
-  - Controlled message pacing and scheduling logic
-  - Warm, professional tone
+> An end-to-end **Retrieval-Augmented Generation (RAG) AI Agent** built with **n8n, LangChain, OpenAI, and Supabase Vector Store** for intelligent conversations, knowledge retrieval, lead capture, and business workflow automation.
+
+![N8N RAG Agent](./image.png)
 
 ---
 
-## 🏗️ Workflow Overview
+## 📌 Overview
 
-```text
-Webhook → Memory → AI Agent (LangChain) → Output Parser → Code Cleanup → Response
-          ↘ Google Sheets + Gmail tools for lead capture
-````
+**N8N RAG Agent** is a production-oriented AI automation workflow that combines conversational AI with Retrieval-Augmented Generation (RAG) and business automation.
 
-### Nodes Included:
+The system enables an AI agent to:
 
-* 🧠 **AI Agent** — Main logic and persona with custom system prompt
-* 🗂️ **Memory Buffer** — Keeps short-term context per user
-* 🪶 **Formatter + Code Nodes** — Cleans and escapes OpenAI output
-* 📊 **Google Sheets Tool** — Stores Name, Email, and History
-* 📧 **Gmail Tool** — Sends notification on new lead
-* 🌐 **Webhook / Respond to Webhook** — REST endpoints for chat connection
+- Understand and respond to user queries
+- Retrieve relevant information from a company knowledge base
+- Maintain short-term conversational context
+- Capture and store qualified leads
+- Send automated email notifications
+- Expose the agent through a REST-style webhook API
+- Integrate with external business tools through n8n
+
+The architecture demonstrates how modern **LLM + RAG + workflow automation** technologies can be combined to build practical AI assistants.
 
 ---
 
-## ⚙️ Setup Instructions
+## ✨ Key Features
 
-### 1️⃣ Prerequisites
+### 🧠 Conversational AI
 
-* n8n installed (Docker or local)
-* Google Sheets and Gmail OAuth2 credentials connected
-* OpenAI API key configured inside n8n
+- OpenAI GPT models integrated through n8n/LangChain
+- Context-aware conversations using memory
+- Custom system prompts for controlled AI behavior
+- Concise and structured responses
+- User-specific conversation sessions
 
-### 2️⃣ Import Workflow
+### 🔎 Retrieval-Augmented Generation
 
-1. Open n8n
-2. Click **“Import Workflow”**
-3. Upload the provided JSON file (from this repo)
+- Supabase Vector Store integration
+- Semantic retrieval from uploaded knowledge documents
+- Context injection into the AI Agent
+- Knowledge-grounded responses
+- Reduced dependency on the model's internal knowledge
 
-### 3️⃣ Environment Setup
+### 📊 Automated Lead Capture
 
-Add environment variables or credentials in n8n:
+The agent can collect important lead information such as:
 
-```env
-OPENAI_API_KEY=your_openai_key
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_KEY=your_supabase_api_key
-```
+- Name
+- Email address
+- Conversation history
 
-### 4️⃣ Connect Google & Gmail
+Captured information can be automatically stored in **Google Sheets** for further processing.
 
-Authenticate both **Google Sheets** and **Gmail** nodes with your Google account.
+### 📧 Automated Notifications
 
-### 5️⃣ Test Webhook
+When a qualified lead is captured, the workflow can automatically trigger a Gmail notification for the relevant team.
 
-Once active, you can test the workflow:
+### 🌐 Webhook API
+
+The workflow exposes an n8n webhook endpoint that allows external applications, websites, or chat interfaces to communicate with the AI agent.
+
+Example request:
 
 ```bash
-curl -X POST https://your-n8n-domain/webhook/e4253cc4-28b8-450a-b600-91dfc15dd5bf \
+curl -X POST https://your-n8n-domain/webhook/your-webhook-id \
   -H "Content-Type: application/json" \
   -d '{
-        "body": {
-          "message": "Hi, what programs do you offer?",
-          "user_id": "test123"
-        }
-      }'
-```
+    "body": {
+      "message": "What programs do you offer?",
+      "user_id": "user_123"
+    }
+  }'
+
 
 ---
 
-## 🧠 Vector Store Integration
+🏗️ System Architecture
 
-This agent supports **Supabase Vector Store** for RAG-based document retrieval.
-Add your knowledge base or company docs and connect via n8n’s Supabase vector node before the AI Agent node.
+┌──────────────────┐
+                    │   Chat / Client  │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │     Webhook      │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │ Conversation     │
+                    │ Memory           │
+                    └────────┬─────────┘
+                             │
+                             ▼
+             ┌──────────────────────────────┐
+             │          AI Agent            │
+             │     OpenAI + LangChain       │
+             └──────────────┬───────────────┘
+                            │
+             ┌──────────────┴──────────────┐
+             ▼                             ▼
+    ┌──────────────────┐          ┌──────────────────┐
+    │ Supabase Vector  │          │ Business Tools   │
+    │ Store / RAG      │          │                  │
+    └──────────────────┘          │ Google Sheets    │
+                                  │ Gmail            │
+                                  └──────────────────┘
+                            │
+                            ▼
+                    ┌──────────────────┐
+                    │ Response         │
+                    │ Formatter        │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │ Respond to       │
+                    │ Webhook          │
+                    └──────────────────┘
 
-**Workflow Logic:**
-
-1. Extract user question
-2. Query Supabase Vector Store
-3. Pass retrieved content to the AI Agent as context
-4. Generate concise, fact-based response
-
----
-
-## 📋 Example Use Case — ThriveRx Virtual Assistant
-
-This workflow powers **ThriveRx**, a virtual wellness and hormone optimization platform.
-It:
-
-* Welcomes users and collects contact info
-* Answers questions from company docs via RAG
-* Saves leads to Google Sheets
-* Notifies the team by Gmail
-* Keeps chat professional and friendly
-
----
-
-## 🧰 Tech Stack
-
-| Component                 | Description                    |
-| ------------------------- | ------------------------------ |
-| **n8n**                   | Visual workflow automation     |
-| **LangChain**             | AI orchestration and reasoning |
-| **OpenAI GPT-4 / GPT-4o** | LLM backbone                   |
-| **Supabase**              | Vector storage for RAG         |
-| **Google Sheets**         | Lead storage                   |
-| **Gmail**                 | Email notification system      |
-
----
-
-## 🧑‍💻 Author
-
-**Ali Hassan**
-📚 BS Computer Science (2022–2026)
-💻 Data Science Enthusiast & AI Workflow Developer
-🌐 GitHub: [alihassanml](https://github.com/alihassanml)
 
 ---
 
-## 📄 License
+🔄 Workflow
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+The core workflow follows this pipeline:
+
+User Message
+     ↓
+Webhook
+     ↓
+Session / Memory
+     ↓
+AI Agent
+     ↓
+Knowledge Retrieval
+     ↓
+Supabase Vector Store
+     ↓
+Relevant Context
+     ↓
+LLM Response Generation
+     ↓
+Response Formatting
+     ↓
+Respond to Webhook
+
+When required, the AI Agent can also interact with business tools:
+
+AI Agent
+   ├── Google Sheets → Store Lead
+   │
+   └── Gmail → Notify Team
+
 
 ---
 
-## 🌟 Contributions
+🧩 Core n8n Components
 
-Pull requests are welcome!
-If you find bugs, create an issue or PR — let’s make RAG automation smarter together.
+Component	Purpose
+
+Webhook	Receives user messages from external applications
+AI Agent	Controls reasoning, tool usage, and responses
+OpenAI Chat Model	Generates natural-language responses
+Memory	Maintains short-term conversation context
+Supabase Vector Store	Stores and retrieves knowledge embeddings
+Google Sheets	Stores captured lead information
+Gmail	Sends automated notifications
+Code / Formatter Nodes	Cleans and structures workflow data
+Respond to Webhook	Returns the final response to the client
+
+
 
 ---
 
-### 🚀 Example Command to Run via Docker
+🔎 RAG Pipeline
 
-```bash
+The Retrieval-Augmented Generation pipeline works as follows:
+
+1. User Query
+
+The user submits a question through the chat interface.
+
+2. Query Processing
+
+The workflow extracts and processes the user's message.
+
+3. Knowledge Retrieval
+
+The system searches the Supabase Vector Store for semantically relevant documents.
+
+4. Context Injection
+
+Relevant document content is provided to the AI Agent as contextual information.
+
+5. Response Generation
+
+The LLM generates a response based on the retrieved knowledge and conversation context.
+
+User Question
+      ↓
+Query
+      ↓
+Vector Search
+      ↓
+Relevant Documents
+      ↓
+Context
+      ↓
+AI Agent
+      ↓
+Grounded Response
+
+
+---
+
+📈 Lead Capture Workflow
+
+The agent can also function as an automated lead-generation assistant.
+
+User Conversation
+       ↓
+Identify Lead Intent
+       ↓
+Collect Name + Email
+       ↓
+Google Sheets
+       ↓
+Store Lead Information
+       ↓
+Gmail Notification
+
+This allows businesses to combine customer support and lead generation within a single AI workflow.
+
+
+---
+
+⚙️ Setup & Installation
+
+1. Prerequisites
+
+Before running the workflow, make sure you have:
+
+n8n installed locally or through Docker
+
+OpenAI API access
+
+Supabase project
+
+Google account for Sheets/Gmail integrations
+
+Imported n8n workflow JSON
+
+
+
+---
+
+2. Clone the Repository
+
+git clone https://github.com/alihassanml/n8n-rag-agent.git
+
+cd n8n-rag-agent
+
+> Replace the repository URL with the actual repository URL if different.
+
+
+
+
+---
+
+3. Run n8n with Docker
+
 docker run -d \
+  --name n8n \
   -p 5678:5678 \
   -v ~/.n8n:/home/node/.n8n \
   n8nio/n8n
-```
 
-Then import this workflow and start building your own RAG-powered automations!
+Open n8n in your browser:
+
+http://localhost:5678
+
 
 ---
 
-### 💬 Need Help?
+📥 Import the Workflow
 
-Open an issue or reach out for guidance on:
+1. Open your n8n dashboard.
 
-* Custom AI Agent Prompts
-* RAG integration with Supabase
-* Lead management automations
 
+2. Select Import from File.
+
+
+3. Choose the workflow JSON file from this repository.
+
+
+4. Import the workflow.
+
+
+5. Configure the required credentials.
+
+
+6. Activate the workflow.
+
+
+
+
+---
+
+🔐 Configuration
+
+Configure the following services inside n8n.
+
+OpenAI
+
+Add your OpenAI credentials to the relevant AI nodes.
+
+Supabase
+
+Configure:
+
+SUPABASE_URL
+SUPABASE_API_KEY
+
+Then connect the Supabase Vector Store node to your knowledge base.
+
+Google Sheets
+
+Authenticate your Google account and select the spreadsheet used for lead storage.
+
+Gmail
+
+Authenticate Gmail OAuth2 and configure the notification workflow.
+
+> Security: Never commit API keys, OAuth credentials, .env files, or other secrets to GitHub.
+
+
+
+
+---
+
+🗂️ Knowledge Base
+
+You can customize the RAG knowledge base with:
+
+Company documentation
+
+FAQs
+
+Product information
+
+Service descriptions
+
+Pricing information
+
+Internal documentation
+
+Support articles
+
+
+The documents should be processed and stored as embeddings in the Supabase Vector Store.
+
+
+---
+
+💼 Example Use Case
+
+ThriveRx Virtual Assistant
+
+This workflow can be adapted into a virtual assistant for a wellness or healthcare-oriented business.
+
+Customer Support
+
+Answer frequently asked questions
+
+Retrieve information from company documentation
+
+Maintain conversation context
+
+
+Lead Generation
+
+Identify interested users
+
+Collect contact information
+
+Store leads automatically
+
+
+Business Automation
+
+Update Google Sheets
+
+Notify staff through Gmail
+
+Connect the AI assistant to an external website
+
+
+> For healthcare deployments, the workflow should be appropriately secured and designed to avoid providing unsafe or unauthorized medical advice.
+
+
+
+
+---
+
+🛠️ Technology Stack
+
+Technology	Role
+
+n8n	Workflow orchestration and automation
+LangChain	AI/LLM orchestration
+OpenAI	Large Language Model
+Supabase	Vector database and backend services
+Google Sheets	Lead management
+Gmail API	Automated notifications
+REST Webhooks	External application integration
+Docker	Containerized deployment
+
+
+
+---
+
+🎯 Real-World Applications
+
+This architecture can be adapted for:
+
+🤝 Customer support assistants
+
+📚 Internal knowledge assistants
+
+🎯 Lead-generation agents
+
+🏢 Business information assistants
+
+🛒 E-commerce support
+
+📧 Sales automation
+
+📖 Documentation assistants
+
+⚙️ AI-powered workflow automation
+
+
+
+---
+
+🔒 Security Considerations
+
+For production deployment:
+
+Store credentials using n8n's credential management.
+
+Never expose API keys in workflow code.
+
+Validate incoming webhook requests.
+
+Add authentication to public endpoints.
+
+Apply rate limiting where appropriate.
+
+Sanitize user-provided input.
+
+Restrict access to sensitive business data.
+
+Use appropriate logging and monitoring.
+
+
+
+---
+
+🚀 Future Improvements
+
+[ ] Streaming AI responses
+
+[ ] Long-term conversation memory
+
+[ ] Multi-user session management
+
+[ ] Authentication and authorization
+
+[ ] RAG evaluation and retrieval metrics
+
+[ ] Hybrid search
+
+[ ] Re-ranking retrieved documents
+
+[ ] Conversation analytics dashboard
+
+[ ] CRM integration
+
+[ ] WhatsApp / Telegram integration
+
+[ ] Human-in-the-loop escalation
+
+[ ] Automated document ingestion pipeline
+
+
+
+---
+
+📂 Project Structure
+
+n8n-rag-agent/
+│
+├── workflow/
+│   └── rag-agent.json
+│
+├── assets/
+│   └── image.png
+│
+├── docs/
+│   └── knowledge-base.md
+│
+├── .gitignore
+├── LICENSE
+└── README.md
+
+
+---
+
+👨‍💻 Author
+
+Ali Hassan
+
+BS Computer Science | AI & Data Science Enthusiast
+
+GitHub: alihassanml
+
+
+---
+
+📄 License
+
+This project is released under the MIT License.
+
+See the LICENSE file for more information.
+
+
+---
+
+🤝 Contributing
+
+Contributions are welcome.
+
+If you find a bug, have an improvement idea, or want to extend the workflow:
+
+1. Fork the repository
+
+
+2. Create a new branch
+
+
+3. Make your changes
+
+
+4. Commit your changes
+
+
+5. Open a Pull Request
+
+
+
+
+---
+
+⭐ Support
+
+If you find this project useful, consider giving the repository a ⭐ on GitHub.
+
+For questions or improvements, feel free to open an issue or submit a pull request.
