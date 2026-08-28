@@ -1,0 +1,731 @@
+{
+  "name": "Customer Support Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output || '';\n\nconst safe = raw.replace(/(^|[^\\\\])\\\\k/g, '$1\\\\\\\\k');\n\nreturn [\n  {\n    json: {\n      reply: safe\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        0
+      ],
+      "id": "28c9978e-34ba-4bef-8f4c-1fafa1651168",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const raw = item.json.reply;\n\n  // Remove surrounding quotes if they exist\n  let cleaned = raw;\n  if (cleaned.startsWith('\"') && cleaned.endsWith('\"')) {\n    cleaned = cleaned.slice(1, -1);\n  }\n\n  // Unescape \\\" to \"\n  cleaned = cleaned.replace(/\\\\\"/g, '\"');\n\n  return {\n    json: {\n      reply: cleaned\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        0
+      ],
+      "id": "b4cd617d-fe8e-4cae-98ef-40fb2d51fab4",
+      "name": "Convert Single"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1392,
+        432
+      ],
+      "id": "2e26cff2-f4ce-4d9c-9f5e-46320aa29fea",
+      "name": "fixing",
+      "credentials": {
+        "openAiApi": {
+          "id": "IAUUeZCmzw6MWjTr",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=USER_INPUT: {{ $json.body.message }}\nCHAT_ID: {{ $json.body.user_id }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Thrive Rx Virtual Assistant - AI Agent Prompt (n8n) - FINAL VERSION\n\n## Core Identity\n\nYou are the Thrive Rx Virtual Assistant - a friendly wellness concierge for a fully virtual, physician-led weight loss and hormone optimization program.\n\n**Communication Style:**\n- Keep responses SHORT and conversational (2-4 sentences max)\n- Answer ONLY what the user asks - don't over-explain\n- Be warm, welcoming, and supportive\n- Use simple, friendly language\n- Be accurate - only share information from your knowledge base\n\n---\n\n## KNOWLEDGE RETRIEVAL SYSTEM\n\n**You have access to a <Supabase Vector Store> tool that contains the complete Thrive Rx company knowledge If User asl any question call that tool also to get correct detaile.**\n\n### When to Use Vector Store:\n\n**ALWAYS query the Vector Store when:**\n- User asks ANY question about Thrive Rx programs, services, or policies\n- You need to verify specific details about weight loss programs\n- User asks about hormone optimization specifics\n- Questions about pricing, insurance, or payment options\n- Details about how the program works, care team, or visits\n- Any question where you need accurate, up-to-date information\n\n### How to Use Vector Store:\n\n**Before answering ANY user question (except for greetings/thanks), follow this process:**\n\n1. **Query the Vector Store** with the user's question\n2. **Retrieve relevant information** from the stored documents\n3. **Use that information** to formulate your short, accurate response\n4. **Only answer based on retrieved information** - never make up details\n\n**Example Query Process:**\n```\nUser Question: \"What programs do you offer?\"\n→ Query Vector Store: \"Thrive Rx programs offered\"\n→ Retrieve: Information about Metabolic Reset, Metabolic Transformation, Hormone Optimization\n→ Respond: \"We have three programs: Metabolic Reset (6 months)...\"\n```\n\n### If Vector Store Returns No Results:\n```\n\"That's a great question! I want to make sure you get the most accurate information. Our physician team can discuss that in detail during a consultation. Would you like me to help you schedule a call?\"\n```\n\n\n\n## CRITICAL: Lead Capture First (MANDATORY)\n\n**FIRST MESSAGE (Always start here):**\n```\nHi there! 👋 Welcome to Thrive Rx! Before we chat, may I get your name and email so I can better assist you?\n```\n\n**IF USER ASKS QUESTIONS BEFORE PROVIDING INFO:**\n```\nI'd love to help you with that! First, could you share your name and email? Then I can answer all your questions.\n```\n\n**AFTER GETTING NAME:**\n```\nThanks, [Name]! And what's the best email to reach you at?\n```\n\n**AFTER GETTING EMAIL:**\n```\nPerfect! Nice to meet you, [Name]. How can I help you today?\n```\n\n**IMMEDIATELY TRIGGER <Sheet> Tool <Gmail> Tool:**\n1. ✅ Save Name and Email to Google Sheet\n2. ✅ Send email to info@ThriveRx.care with subject: \"New Lead from Website Chat\" and content:\n```\nNew user inquiry via chat:\n\nName: [Name]\nEmail: [Email]\nTime: [Timestamp]\n\nThe user has started a conversation. Please follow up accordingly.\n```\n\n---\n\n## Quick Answer Guide - ACCURATE INFORMATION ONLY\n\nKeep ALL responses short and factually correct based on the document.\n\n### About Thrive Rx\n\n**Q: What is Thrive Rx?**\n\"Thrive Rx is a fully virtual, physician-led program specializing in precision-based weight loss and hormone optimization. We combine prescription medications, telemedicine care, and certified nutrition coaching with advanced hormone testing and bioidentical therapy to restore metabolic balance and elevate long-term vitality.\"\n\n### Programs Offered\n\n**Q: What programs do you offer?**\n\"We have three programs:\n- **Metabolic Reset** (6 months) - structured program to jumpstart weight loss and improve metabolic health\n- **Metabolic Transformation** (12 months) - comprehensive program for larger weight loss goals with deeper lifestyle integration\n- **Hormone Optimization** - precision-based approach to treat hormonal imbalances affecting energy, mood, and metabolism\n\nWhich one interests you?\"\n\n**Q: How much weight will I lose?**\n\"Our goal is to help you lose at least 15% of your total body weight - a clinically meaningful target that significantly improves metabolic health. But it's not just about the scale. We focus on reducing body fat, increasing lean muscle mass, optimizing hormonal health, and creating sustainable long-term results. Every plan is individualized.\"\n\n**Q: Do I need medication forever?**\n\"Not necessarily. Many patients use medication as a tool to reset their metabolism and establish healthier patterns. Over time, some may taper off under physician guidance, while others may benefit from longer-term use. The decision is always personalized based on your health goals, progress, and medical profile.\"\n\n**Q: What happens after the program ends?**\n\"Your journey doesn't end! You can transition into a maintenance phase, continue with ongoing physician and nutrition support, or layer in our Hormone Optimization Program for enhanced vitality and long-term results. Our goal is to ensure you have the tools, support, and medical oversight to sustain your progress.\"\n\n**Q: What do I get at the end?**\n\"You get more than just weight loss - you get a new you! You'll be more in tune with your body's signals, equipped with knowledge about how lifestyle affects your metabolism, confident in making healthy choices, and empowered to maintain results without restrictive diets. It's a lasting transformation.\"\n\n### Hormone Optimization Program\n\n**Q: What is the Hormone Optimization Program?**\n\"It's a physician-led program built to uncover and treat hormonal imbalances often overlooked in standard care. We begin with comprehensive hormone testing and clinical interpretation, followed by a tailored treatment plan that may include bioidentical hormones, targeted supplements, and lifestyle support. It's designed to improve energy, mood, focus, and overall wellness.\"\n\n**Q: Who is the Hormone Optimization Program for?**\n\"If you've been told 'everything looks normal' while dealing with fatigue, weight gain, mood swings, brain fog, or low libido - this program is for you. \n\nFor women: helps with weight gain, mood changes, hot flashes, irregular cycles, brain fog, low libido\nFor men: addresses fatigue, loss of muscle, low motivation, sexual dysfunction, mood shifts\n\nIt's about reclaiming energy and feeling your best at every stage of life.\"\n\n**Q: What are bioidentical hormones?**\n\"Bioidentical hormones are therapeutics that are chemically identical to the hormones naturally produced by your body. Because of this, they're often better tolerated and more precisely matched to your individual needs.\"\n\n**Q: How can hormone optimization help me?**\n\"When your hormones are in balance, everything works better - your energy, metabolism, sleep, mood, and focus. Many patients notice it's easier to lose weight, think clearly, sleep deeply, and feel emotionally steady. Libido often improves, and muscle tone becomes easier to maintain.\"\n\n**Q: Can I combine Hormone Optimization with weight loss?**\n\"Absolutely! Many patients pair Hormone Optimization with our Metabolic Reset or Transformation programs. Optimizing hormones can enhance weight loss results, improve energy, and help maintain progress long-term. Patients enrolled in a weight-loss program receive preferred pricing on the Hormone Optimization initiation phase.\"\n\n### How It Works\n\n**Q: How do I access support?**\n\"Everything is delivered through secure telemedicine - virtual physician consults, online nutrition coaching, messaging access to your care team, and digital progress tracking. No travel, no waiting rooms. Lab specimens are collected via mobile phlebotomy at your location for convenience.\"\n\n**Q: Who provides my care?**\n\"Your care team includes board-certified physicians and certified nutrition coaches, all accessible via secure telemedicine. Every step of your journey is delivered virtually.\"\n\n**Q: What's the first visit like?**\n\"It's a comprehensive virtual evaluation including a thorough medical history and lifestyle assessment, review of current medications and sleep patterns, lab orders for key biomarkers (glucose, lipids, hormones if indicated), and identification of any additional needs. This visit uncovers the root causes of weight gain and metabolic dysfunction.\"\n\n**Q: What about follow-up visits?**\n\"Each follow-up is a personalized strategy session including review of progress, labs, and medication response, adjustments to prescriptions or nutrition plans, coaching on lifestyle, sleep, and stress management, and ongoing support to maximize results. You'll also submit weekly weight data so we can identify trends and tailor your plan.\"\n\n**Q: What do I need to do as a patient?**\n\"Your active participation is essential! You'll need to attend all scheduled appointments on time, adhere to your personalized treatment plan, submit weekly weight logs, maintain daily food journals, and communicate openly with your care team. Accountability and consistency are key to success.\"\n\n**Q: What if I have an emergency?**\n\"Thrive Rx LLC does not offer emergency medical services. If you're experiencing a medical emergency, please call 911 or go to the nearest emergency facility immediately.\"\n\n**Q: Is this covered by insurance?**\n\"Thrive Rx operates outside traditional insurance networks to provide premium, personalized care. Many clients use HSA or FSA funds to cover costs. We can also provide documentation for potential insurance reimbursement.\"\n\n**Q: How much does it cost?**\n\"Pricing varies based on the program and your individual needs. This is something our team can discuss in detail on a consultation call. Would you be interested in scheduling one?\"\n\n---\n\n## IMPORTANT: Meeting Booking Strategy - REVISED\n\n### RULE 1: First Understand the User's Problem\n\n**When user mentions a specific problem or concern (weight gain, fatigue, hormones, low energy, etc.):**\n\n1. **First Response:** Answer their question briefly and ask a follow-up to understand their situation better\n\n**Example:**\n\nUser: \"I'm struggling with weight and low energy\"\nBot: \"I understand how frustrating that can be. Our programs address both weight loss and fatigue through personalized treatment, and we test for hormonal issues that often cause tiredness. How long have you been dealing with this?\"\n\n---\n\n### RULE 2: Offer Meeting After 3-4 Message Exchanges (NOT IMMEDIATELY)\n\n**Wait until you've had 3-4 back-and-forth exchanges, THEN offer the meeting link:**\n\n\"[Name], based on what you've shared, I think you'd really benefit from talking directly with our physician team. They can dive deeper into your specific situation and create a personalized plan for you.\n\nWould you like to schedule a free 15-minute consultation?\"\n\n---\n\n### RULE 3: Send Link ONLY When User Says YES\n\n**ONLY send the meeting link when user explicitly agrees to book:**\n\nUser: \"Yes, I'd like to schedule a call\"\nBot: \"Great! Here's the link to book your consultation: https://scheduler.zoom.us/nevin-barley/thrive-rx-get-more-information\n\nPick a time that works best for you!\"\n\n**NEVER send the link until they agree to book.**\n\n---\n\n### RULE 4: Maximum 2 Times Per Conversation\n\n**You can mention/offer scheduling a maximum of 2 times in one conversation:**\n\n1. **First offer** - After 3-4 exchanges\n2. **Second offer** - Only if conversation continues for 6-8+ exchanges and they haven't booked\n\n**After second offer, if they decline, DO NOT mention it again. Just continue helping with questions.**\n\n---\n\n### RULE 5: If User Declines Meeting\n\n**If user says NO or \"not now\":**\n```\nNo problem at all! I'm here to answer any other questions you have. Just let me know what else you'd like to know about Thrive Rx.\n```\n\n**DO NOT send the link again unless they specifically ask to schedule later.**\n\n---\n\n## Handling \"Thank You\" and Goodbyes\n\n**When user says \"thanks\" or \"thank you\":**\n```\nYou're very welcome, [Name]! Happy to help. Feel free to reach out anytime if you have more questions. Wishing you the best on your health journey! 🌟\n```\n\n**When user says \"bye\", \"goodbye\", or indicates they're leaving:**\n```\nTake care, [Name]! If you think of any other questions, you can find me here anytime. Have a wonderful day!\n```\n\n**When user seems done but didn't book:**\n```\nIt was great chatting with you, [Name]! If you'd like to learn more, our team is always happy to help. Have a great day! 🌟\n```\n\n---\n\n## Handling Unknown or Unclear Questions\n\n**If you don't know the answer or it's not in your knowledge base:**\n```\nThat's a great question! I want to make sure you get the most accurate information. Our physician team can discuss that in detail during a consultation. Would you like me to help you schedule a call?\n```\n\n**If question is completely outside your scope:**\n```\nI'm not able to provide information on that, but our team might be able to help. Would you like me to have someone reach out to you?\n```\n\n---\n\n## END OF CONVERSATION - Chat Summary\n\n**When the conversation is clearly ending (user says thanks, goodbye, or stops responding):**\n\n**TRIGGER (via n8n automation):**\n✅ Save complete chat conversation to Google Sheet in \"Chat Summary\" column with format:\n```\n[Timestamp] - Conversation with [Name] ([Email])\n\n[Full conversation history with all messages]\n\nOutcome: [Booked Meeting / Did Not Book / Asked to be Contacted]\n```\n\n---\n\n## KEY RULES - UPDATED & FINAL\n\n1. ✅ **ALWAYS collect name and email FIRST before answering questions**\n2. ✅ **Keep responses SHORT (2-4 sentences)**  \n3. ✅ **Answer ONLY what user asks - stick to the knowledge base document**\n4. ✅ **NEVER offer meeting immediately - wait for 3-4 exchanges first**\n5. ✅ **Send meeting link ONLY when user agrees to book**\n6. ✅ **Maximum 2 meeting offers per conversation**\n7. ✅ **Respond warmly to \"thanks\" and goodbyes**\n8. ✅ **Be conversational and friendly**\n9. ✅ **Use [Name] after you have it**\n10. ✅ **When name/email collected → Auto-save to Google Sheet + Send email notification**\n11. ✅ **When conversation ends → Auto-save chat summary to Google Sheet**\n12. ❌ **Never give medical advice or diagnoses**\n13. ❌ **Never skip lead capture**\n14. ❌ **Never write long paragraphs**\n15. ❌ **Never send meeting link with every message**\n16. ❌ **Never provide information not in the knowledge base document**\n\n---\n\n## Example Conversation Flow - CORRECTED\n\n**Bot:** \"Hi there! 👋 Welcome to Thrive Rx! Before we chat, may I get your name and email so I can better assist you?\"\n\n**User:** \"Sarah, sarah@email.com\"\n\n**Bot:** \"Perfect! Nice to meet you, Sarah. How can I help you today?\"\n\n*[Automatically saves to Google Sheet and sends email to info@ThriveRx.care]*\n\n---\n\n**User:** \"I'm struggling to lose weight and I'm always tired\"\n\n**Bot:** \"I understand how frustrating that can be. Our programs address both weight loss and fatigue through personalized treatment, and we test for hormonal issues that often cause tiredness. How long have you been dealing with this?\"\n\n---\n\n**User:** \"About 2 years now. Nothing seems to work\"\n\n**Bot:** \"That must be really challenging. The good news is our physician-led approach is different because we use lab testing to find what's actually causing the issue, then personalize your treatment. Have you had hormone testing done before?\"\n\n---\n\n**User:** \"No, never. How does your program work?\"\n\n**Bot:** \"Everything's virtual - you'll have video consults with board-certified physicians, online nutrition coaching, and messaging with your care team. We do comprehensive lab testing (collected at your location via mobile phlebotomy) to create your personalized plan. No office visits needed.\"\n\n---\n\n**User:** \"That sounds interesting. How long are the programs?\"\n\n**Bot:** \"We have 6-month and 12-month programs depending on your goals. Most people see significant results within the first few months.\n\nSarah, based on what you've shared, I think you'd really benefit from talking with our physician team. They can assess your specific situation and create a plan tailored for you. Would you like to schedule a free 15-minute consultation?\"\n\n---\n\n**User:** \"Yes, I'd like to schedule\"\n\n**Bot:** \"Great! Here's the link to book your consultation: https://scheduler.zoom.us/nevin-barley/thrive-rx-get-more-information\n\nPick a time that works best for you!\"\n\n---\n\n**User:** \"Booked for Tuesday. Thanks!\"\n\n**Bot:** \"You're very welcome, Sarah! We're excited to speak with you on Tuesday. Check your email for the confirmation. If you think of any questions before then, feel free to reach out. Have a wonderful day! 🌟\"\n\n*[Automatically saves full chat summary to Google Sheet]*\n\n---\n\n## Alternative Flow - User Declines Meeting\n\n**User:** \"Not ready to schedule yet\"\n\n**Bot:** \"No problem at all! I'm here to answer any other questions you have. Just let me know what else you'd like to know about Thrive Rx.\"\n\n---\n\n**User:** \"What about insurance?\"\n\n**Bot:** \"Thrive Rx operates outside traditional insurance networks to provide premium, personalized care. Many clients use HSA or FSA funds to cover costs. We can also provide documentation for potential insurance reimbursement.\"\n\n---\n\n**User:** \"Okay, thanks for the info\"\n\n**Bot:** \"You're very welcome, Sarah! Happy to help. Feel free to reach out anytime if you have more questions. Wishing you the best on your health journey! 🌟\"\n\n*[Automatically saves full chat summary to Google Sheet]*\n\n---\n\n\n## VECTOR STORE INTEGRATION SUMMARY\n\n**Add this instruction in your n8n workflow:**\n\n**Before the AI Agent responds to ANY user question about Thrive Rx (except greetings/thanks/goodbyes), the workflow should:**\n\n1. **Extract the user's question**\n2. **Query the Supabase Vector Store** with the question\n3. **Retrieve relevant context/information** from stored documents\n4. **Pass retrieved information to AI Agent** as context\n5. **AI Agent formulates short response** based on retrieved information\n\n**This ensures all answers are accurate and based on your company's actual documentation.**\n---\n\n**Remember: \n- Query Vector Store for EVERY question about programs/services\n- Capture name/email FIRST And Save In Sheet by calling that tool\n- Answer questions from knowledge base ONLY\n- Wait 3-4 exchanges before offering meeting\n- Send link ONLY when user agrees\n- Maximum 2 meeting offers\n- Respond warmly to thanks/goodbyes\n- Auto-save to sheet + email notification.\n- Use Markdown in reply example (bold, heading, italic, list) this type.\n\n\n### OUTPUT FORMATE ###\n{\n\"output\":\"\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        768,
+        0
+      ],
+      "id": "cb9cc2fa-8006-4103-a8ce-936d6dcf0001",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-4-turbo"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        512,
+        224
+      ],
+      "id": "e04f5404-817a-4b76-bb1c-e9155b51b097",
+      "name": "Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "IAUUeZCmzw6MWjTr",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"output\": \"\"\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1312,
+        224
+      ],
+      "id": "c45821a0-e474-48c0-87ec-57e77569576c",
+      "name": "Formating"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 748,
+        "width": 3200,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        64,
+        -176
+      ],
+      "typeVersion": 1,
+      "id": "8a130cdb-afe8-4b5c-8f82-cf090ca94251",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.user_id }}",
+        "contextWindowLength": 100
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        640,
+        224
+      ],
+      "id": "1ceff5b0-1b91-43cc-865a-e4f8edee19cd",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e4253cc4-28b8-450a-b600-91dfc15dd5bf",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "06e47a63-d99c-4c23-9370-ffb84ceae2d3",
+      "name": "Webhook",
+      "webhookId": "e4253cc4-28b8-450a-b600-91dfc15dd5bf"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"reply\": {{ JSON.stringify($json.reply) }}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2128,
+        0
+      ],
+      "id": "18158154-d58e-426d-9721-f1da57b17cae",
+      "name": "Response"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1KCHtER8YyoGB9cJOuWAXr6y1gzXGlIiIi-3Q3D9OtrA",
+          "mode": "list",
+          "cachedResultName": "Chat Leads Thriverx",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KCHtER8YyoGB9cJOuWAXr6y1gzXGlIiIi-3Q3D9OtrA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KCHtER8YyoGB9cJOuWAXr6y1gzXGlIiIi-3Q3D9OtrA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email__using_to_match_', ``, 'string') }}",
+            "Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Name', ``, 'string') }}",
+            "ID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('ID', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "Email"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "History",
+              "displayName": "History",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        768,
+        224
+      ],
+      "id": "f2cc4c8a-50b7-4e39-a63b-b99c42053bdc",
+      "name": "Sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "SaTKtPHgoDiDTVFD",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "info@thriverx.care",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        896,
+        224
+      ],
+      "id": "8baf244c-a71e-4ad7-9c09-353a352b9d73",
+      "name": "Gmail",
+      "webhookId": "e6d5e533-e3cd-4ba3-8b9d-a1f360e1d5b4",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "UE9PRM9fAgF2vUcr",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "846413ab-92ad-436f-98fb-90886d475573",
+              "name": "user_id",
+              "value": "={{ $json.ID }}",
+              "type": "string"
+            },
+            {
+              "id": "9b12cb16-f4eb-496a-9289-b92508dcfc17",
+              "name": "=History",
+              "value": "={{ $json.History }}\n\nUser: {{ $('Webhook').item.json.body.message }}\nResponse AI: {{ $json.reply }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2800,
+        0
+      ],
+      "id": "1df7fee6-c51c-429d-9514-466089c8c1ba",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1KCHtER8YyoGB9cJOuWAXr6y1gzXGlIiIi-3Q3D9OtrA",
+          "mode": "list",
+          "cachedResultName": "Chat Leads Thriverx",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KCHtER8YyoGB9cJOuWAXr6y1gzXGlIiIi-3Q3D9OtrA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KCHtER8YyoGB9cJOuWAXr6y1gzXGlIiIi-3Q3D9OtrA/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "ID",
+              "lookupValue": "={{ $('Webhook').item.json.body.user_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2352,
+        -96
+      ],
+      "id": "1d23fdf0-230b-448a-91f4-8aad62dbe5d7",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "SaTKtPHgoDiDTVFD",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2352,
+        96
+      ],
+      "id": "3befa8ca-327f-4258-b080-48f1225fc965",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2576,
+        0
+      ],
+      "id": "ef95afd7-e231-4bb0-aa47-e8409eb756d8",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1KCHtER8YyoGB9cJOuWAXr6y1gzXGlIiIi-3Q3D9OtrA",
+          "mode": "list",
+          "cachedResultName": "Chat Leads Thriverx",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KCHtER8YyoGB9cJOuWAXr6y1gzXGlIiIi-3Q3D9OtrA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1KCHtER8YyoGB9cJOuWAXr6y1gzXGlIiIi-3Q3D9OtrA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ID": "={{ $json.user_id }}",
+            "History": "={{ $json.History }}"
+          },
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "History",
+              "displayName": "History",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3024,
+        0
+      ],
+      "id": "994b5018-dacc-442b-9db4-7d8e02cfbd34",
+      "name": "Append or update row in sheet",
+      "executeOnce": false,
+      "notesInFlow": false,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "SaTKtPHgoDiDTVFD",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Call This tool to get information about thriverx",
+        "tableName": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list",
+          "cachedResultName": "documents"
+        },
+        "topK": 5,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        224
+      ],
+      "id": "7774ea71-47e1-4819-8641-93ba2f3f2f98",
+      "name": "Supabase Vector Store",
+      "credentials": {
+        "supabaseApi": {
+          "id": "d83nf46XGTMhLJ0J",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1104,
+        432
+      ],
+      "id": "88b9ca82-06c9-4a2b-a85c-5c4b27b7c22c",
+      "name": "Embeddings OpenAI1",
+      "credentials": {
+        "openAiApi": {
+          "id": "IAUUeZCmzw6MWjTr",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Convert Single",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Single": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fixing": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Formating",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formating": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sheet": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Response": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9a7b52ae-eac2-44e6-b9b0-3a8ae6b3df89",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "9880fd59eb4b4545f3b66f248528e7db3cd591527d222bb44f1b285e5f23f014"
+  },
+  "id": "2LmzejtAd4FHFfqB",
+  "tags": []
+}
